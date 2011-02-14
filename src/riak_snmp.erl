@@ -8,7 +8,12 @@
 start() ->
     erlang:system_flag(fullsweep_after, 20),
     riak_core_util:start_app_deps(riak_snmp),
-    application:start(riak_snmp, permanent).
+    case application:get_env(riak_kv, riak_kv_stat) of
+        {ok, false} ->
+            ok;
+        _ ->        
+            application:start(riak_snmp, permanent)
+    end.
 
 start_snmp() ->
     riak_core_util:start_app_deps(riak_snmp),
