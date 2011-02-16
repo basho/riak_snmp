@@ -17,7 +17,6 @@ start_link() ->
 %% @spec init([]) -> SupervisorTree
 %% @doc supervisor callback.
 init([]) ->
-    otp_mib:load(snmp_master_agent),    
     Processes = [
                  {riak_snmp_stat_poller,
                   {riak_snmp_stat_poller, start_link, []},
