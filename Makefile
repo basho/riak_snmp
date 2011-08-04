@@ -10,7 +10,7 @@ compile:
 clean:
 	./rebar clean
 
-eunit:
+test:
 	./rebar eunit
 
 docs:
