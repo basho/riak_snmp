@@ -1,8 +1,11 @@
 
 
-.PHONY: deps
+.PHONY: deps test
 
-all: compile
+all: deps compile
+
+deps:
+	./rebar get-deps
 
 compile:
 	./rebar compile
@@ -11,7 +14,7 @@ clean:
 	./rebar clean
 
 test:
-	./rebar eunit
+	./rebar eunit skip_deps=true
 
 docs:
 	./rebar doc

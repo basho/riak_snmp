@@ -1,0 +1,11 @@
+.eunit/*
+deps/*
+priv/*
+*.o
+*.beam
+doc
+ebin
+priv/mibs/RIAK.bin
+mibs/RIAK.bin
+include/RIAK.hrl
+*~
