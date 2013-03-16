@@ -6,7 +6,7 @@
 -include("RIAK.hrl").
 
 %% API
--export([start_link/0, stop/0, set_repl_var/1]).
+-export([start_link/0, stop/0]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
@@ -507,8 +507,12 @@ set_rows(_, [], _) ->
     true.
 set_rows(Table, Indexes, Cols, IndexCol)
   when Table =:= replRealtimeStatusTable; Table =:= replFullsyncStatusTable ->
-    Rows = get_sorted_rows(Table),
-    set_rows(Table, Rows, Indexes, Cols, IndexCol, []).
+    case get_sorted_rows(Table) of
+        [] ->
+            true;
+        Rows ->
+            set_rows(Table, Rows, Indexes, Cols, IndexCol, [])
+    end.
 set_rows(Table, Rows, [Index|Indexes], Cols, IndexCol, Acc) ->
     ColsWithIndex = lists:keystore(IndexCol,1,Cols,{IndexCol,Index}),
     Row = [Row || {_,{Nm,_,_}}=Row <- Rows, Nm == Index],
