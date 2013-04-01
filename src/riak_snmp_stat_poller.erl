@@ -223,6 +223,7 @@ poll_repl_stats(TrapStates) ->
     trap_if_needed(Traps, TrapStates).
 
 gauge_coerce(undefined)            -> 0;
+gauge_coerce(unavailable)          -> 0;
 gauge_coerce(I) when is_integer(I) -> I;
 gauge_coerce(N) when is_number(N)  -> trunc(N).
 
