@@ -9,6 +9,7 @@ deps:
 
 compile:
 	./rebar compile
+	cp mibs/* priv/mibs/
 
 clean:
 	./rebar clean
@@ -21,5 +22,3 @@ docs:
 
 dialyzer: compile
 	@dialyzer -Wno_return -c apps/riak_snmp/ebin
-
-
