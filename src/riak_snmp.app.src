@@ -1,7 +1,7 @@
 % -*- mode: erlang -*-
 {application, riak_snmp,
  [{description,  "riak_snmp"},
-  {vsn,          "1.2.2"},
+  {vsn,          "1.2.3"},
   {modules,      []},
   {registered,   []},
   {mod,          {riak_snmp_app, []}},
