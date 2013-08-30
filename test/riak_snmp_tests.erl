@@ -93,7 +93,7 @@ riak_traps() ->
                         ?assertEqual(Thresh, ThresholdVal),
                         ok
                 end),
-    timer:sleep(trunc(1.5*?INTERVAL)),
+    timer:sleep(trunc(5.5*?INTERVAL)),
     ?assert(meck:validate(snmpa)),
     ?assert(meck:called(snmpa, send_notification,
                         [snmp_master_agent,nodeGetTimeMeanAlarmRising,
@@ -109,7 +109,7 @@ riak_traps() ->
                 end),
     meck:expect(fake_riak_stats, get_stats,
                 fun(local) -> get_stats(Stat, 0) end),
-    timer:sleep(trunc(1.5*?INTERVAL)),
+    timer:sleep(trunc(5.5*?INTERVAL)),
     riak_snmp_stat_poller:stop(),
     timer:sleep(2*?INTERVAL),
     ?assert(meck:validate(snmpa)),
@@ -148,7 +148,7 @@ repl_tables() ->
                         true
                 end),
     riak_snmp_stat_poller:start_link(),
-    timer:sleep(trunc(1.5*?INTERVAL)),
+    timer:sleep(trunc(5.5*?INTERVAL)),
     riak_snmp_stat_poller:stop(),
     timer:sleep(2*?INTERVAL),
     ?assert(meck:validate(snmpa)),
@@ -184,7 +184,7 @@ repl_traps() ->
                         ok
                 end),
     riak_snmp_stat_poller:start_link(),
-    timer:sleep(trunc(1.5*?INTERVAL)),
+    timer:sleep(trunc(5.5*?INTERVAL)),
     riak_snmp_stat_poller:stop(),
     timer:sleep(2*?INTERVAL),
     ?assert(meck:validate(snmpa)),

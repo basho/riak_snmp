@@ -141,7 +141,13 @@ handle_cast(_Msg, State) ->
     {noreply, State, get_polling_interval()}.
 
 handle_info(timeout, State) ->
-    NewTrapStates = poll_stats(State#state.trap_states),
+    NewTrapStates = try
+                        poll_stats(State#state.trap_states)
+                    catch X:Y ->
+                            error_logger:error_msg("poll_stats: ~p ~p @ ~p\n",
+                                                   [X, Y, erlang:get_stacktrace()]),
+                            State#state.trap_states
+                    end,
     {noreply, State#state{trap_states=NewTrapStates}, get_polling_interval()};
 handle_info(_Info, State) ->
     {noreply, State, get_polling_interval()}.
