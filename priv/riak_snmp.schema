@@ -1,0 +1,84 @@
+%% SNMP config
+%% @doc To force Riak to reload SNMP configuration files on startup
+{mapping, "snmp.force_reload", "snmp.agent", [
+    {default, true},
+    {datatype, enum},
+    {enum, [true, false]}
+]}.
+
+{translation,
+ "snmp.agent",
+ fun(Conf) ->
+    ForceReload = cuttlefish_util:conf_get_value("snmp.force_reload", Conf),
+    [{net_if, [{options,[{bind_to, true}]}]},
+     {config, [{dir, "{{snmp_agent_conf}}"}, {force_load, ForceReload}]},
+     {db_dir, "{{snmp_db_dir}}"}]
+ end}. 
+
+%% @doc Polling interval for stats gathering
+{mapping, "snmp.polling_interval", "riak_snmp.polling_interval", [
+    {datatype, duration},
+    {default, "1m"}
+]}.
+
+%% @doc Enable or disable replication traps.
+{mapping, "snmp.repl_traps", "riak_snmp.repl_traps_enabled", [
+    {datatype, enum},
+    {default, off},
+    {enum, [on, off]}
+]}.
+
+{translation,
+ "riak_snmp.repl_traps_enabled",
+ fun(Conf) ->
+    ReplTraps = cuttlefish_util:conf_get_value("snmp.repl_traps", Conf),
+    case ReplTraps of
+        on -> true;
+        off -> false;
+        _ -> false
+    end
+ end}. 
+
+%% @doc Alarm thresholds for specific stats (microseconds). Each threshold
+%% name below matches its SNMP object name. The default value of 0
+%% disables alarms for that stat.
+{mapping, "snmp.nodeGetTimeMeanThreshold",   "riak_snmp.nodeGetTimeMeanThreshold",     [
+    {default, 0},
+    {datatype, integer}
+]}.
+{mapping, "snmp.nodeGetTimeMedianThreshold", "riak_snmp.nodeGetTimeMedianThreshold",   [
+    {default, 0},
+    {datatype, integer}
+]}.
+{mapping, "snmp.nodeGetTime95Threshold",     "riak_snmp.nodeGetTime95Threshold",       [
+    {default, 0},
+    {datatype, integer}
+]}.
+{mapping, "snmp.nodeGetTime99Threshold",     "riak_snmp.nodeGetTime99Threshold",       [
+    {default, 0},
+    {datatype, integer}
+]}.
+{mapping, "snmp.nodeGetTime100Threshold",    "riak_snmp.nodeGetTime100Threshold",      [
+    {default, 0},
+    {datatype, integer}
+]}.
+{mapping, "snmp.nodePutTimeMeanThreshold",   "riak_snmp.nodePutTimeMeanThreshold",     [
+    {default, 0},
+    {datatype, integer}
+]}.
+{mapping, "snmp.nodePutTimeMedianThreshold", "riak_snmp.nodePutTimeMedianThreshold",   [
+    {default, 0},
+    {datatype, integer}
+]}.
+{mapping, "snmp.nodePutTime95Threshold",     "riak_snmp.nodePutTime95Threshold",       [
+    {default, 0},
+    {datatype, integer}
+]}.
+{mapping, "snmp.nodePutTime99Threshold",     "riak_snmp.nodePutTime99Threshold",       [
+    {default, 0},
+    {datatype, integer}
+]}.
+{mapping, "snmp.nodePutTime100Threshold",    "riak_snmp.nodePutTime100Threshold",      [
+    {default, 0},
+    {datatype, integer}
+]}.
