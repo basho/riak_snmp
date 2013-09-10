@@ -2,8 +2,7 @@
 %% @doc To force Riak to reload SNMP configuration files on startup
 {mapping, "snmp.force_reload", "snmp.agent", [
     {default, true},
-    {datatype, enum},
-    {enum, [true, false]}
+    {datatype, {enum, [true, false]}}
 ]}.
 
 {translation,
@@ -17,15 +16,14 @@
 
 %% @doc Polling interval for stats gathering
 {mapping, "snmp.polling_interval", "riak_snmp.polling_interval", [
-    {datatype, duration},
+    {datatype, {duration, ms}},
     {default, "1m"}
 ]}.
 
 %% @doc Enable or disable replication traps.
 {mapping, "snmp.repl_traps", "riak_snmp.repl_traps_enabled", [
-    {datatype, enum},
-    {default, off},
-    {enum, [on, off]}
+    {datatype, {enum, [on, off]}},
+    {default, off}
 ]}.
 
 {translation,
