@@ -181,7 +181,7 @@ prepare_mibs() ->
                       PD
               end,
     DefaultMibDir = filename:join(PrivDir, "mibs"),
-    MibDir = riak:get_app_env(mib_dir, DefaultMibDir),
+    MibDir = app_helper:get_env(riak_snmp, mib_dir, DefaultMibDir),
     snmpa:load_mibs(filelib:wildcard(filename:join(MibDir, "*.bin"))).
 
 poll_stats(TrapStates) ->
