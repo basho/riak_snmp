@@ -13,6 +13,7 @@ compile:
 
 clean:
 	./rebar clean
+	rm -f include/RIAK.hrl priv/mibs/*
 
 test:
 	./rebar eunit skip_deps=true

@@ -4,7 +4,7 @@ deps/*
 *.beam
 doc
 ebin
-priv/mibs/RIAK.bin
+priv/mibs/*
 mibs/RIAK.bin
 include/RIAK.hrl
 *~
