@@ -11,8 +11,9 @@
     ForceReload = cuttlefish_util:conf_get_value("snmp.force_reload", Conf),
     [{net_if, [{options,[{bind_to, true}]}]},
      {config, [{dir, "{{snmp_agent_conf}}"}, {force_load, ForceReload}]},
-     {db_dir, "{{snmp_db_dir}}"}]
- end}. 
+     {db_dir, "{{snmp_db_dir}}"},
+     {db_init_error,create_db_and_dir}]
+end}.
 
 %% @doc Polling interval for stats gathering
 {mapping, "snmp.polling_interval", "riak_snmp.polling_interval", [
