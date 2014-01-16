@@ -32,20 +32,20 @@ override_schema_test() ->
     %% Conf represents the riak.conf file that would be read in by cuttlefish.
     %% this proplists is what would be output by the conf_parse module
     Conf = [
-            {["snmp", "force_reload"], false},
-            {["snmp", "db_dir"], "/crazy/snmp/db"},
-            {["snmp", "polling_interval"], "1h"},
-            {["snmp", "repl_traps"], on},
-            {["snmp", "nodeGetTimeMeanThreshold"], 10},
-            {["snmp", "nodeGetTimeMedianThreshold"], 20},
-            {["snmp", "nodeGetTime95Threshold"], 30},
-            {["snmp", "nodeGetTime99Threshold"], 40},
-            {["snmp", "nodeGetTime100Threshold"], 50},
-            {["snmp", "nodePutTimeMeanThreshold"], 60},
-            {["snmp", "nodePutTimeMedianThreshold"], 70},
-            {["snmp", "nodePutTime95Threshold"], 80},
-            {["snmp", "nodePutTime99Threshold"], 90},
-            {["snmp", "nodePutTime100Threshold"], 100}
+            {["snmp", "force_reload"], off},
+            {["snmp", "database_dir"], "/crazy/snmp/db"},
+            {["snmp", "refresh_frequency"], "1h"},
+            {["snmp", "traps", "replication"], on},
+            {["snmp", "nodeGetTimeMeanThreshold"], "10"},
+            {["snmp", "nodeGetTimeMedianThreshold"], "20"},
+            {["snmp", "nodeGetTime95Threshold"], "30"},
+            {["snmp", "nodeGetTime99Threshold"], "40"},
+            {["snmp", "nodeGetTime100Threshold"], "50"},
+            {["snmp", "nodePutTimeMeanThreshold"], "60"},
+            {["snmp", "nodePutTimeMedianThreshold"], "70"},
+            {["snmp", "nodePutTime95Threshold"], "80"},
+            {["snmp", "nodePutTime99Threshold"], "90"},
+            {["snmp", "nodePutTime100Threshold"], "100"}
            ],
 
     %% The defaults are defined in ../priv/riak_snmp.schema.
