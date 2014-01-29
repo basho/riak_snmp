@@ -15,11 +15,6 @@ clean:
 	./rebar clean
 	rm -f include/RIAK.hrl priv/mibs/*
 
-test:
-	./rebar eunit skip_deps=true
+DIALYZER_APPS = kernel stdlib erts sasl eunit
 
-docs:
-	./rebar doc
-
-dialyzer: compile
-	@dialyzer -Wno_return -c apps/riak_snmp/ebin
+include tools.mk
