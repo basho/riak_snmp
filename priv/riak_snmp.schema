@@ -5,14 +5,14 @@
 {mapping, "snmp.force_reload", "snmp.agent", [
     {default, on},
     {datatype, flag},
-    {level, advanced}
+    hidden
 ]}.
 
 %% @doc The directory where SNMP will store its internal database.
 {mapping, "snmp.database_dir", "snmp.agent", [
     {default, "{{snmp_db_dir}}"},
     {datatype, directory},
-    {level, advanced}
+    hidden
 ]}.
 
 {translation,
@@ -31,14 +31,14 @@ end}.
 {mapping, "snmp.refresh_frequency", "riak_snmp.polling_interval", [
     {datatype, {duration, ms}},
     {default, "1m"},
-    {level, advanced}
+    hidden
 ]}.
 
 %% @doc Enable or disable traps for multi-datacenter replication.
 {mapping, "snmp.traps.replication", "riak_snmp.repl_traps_enabled", [
     {datatype, flag},
     {default, off},
-    {level, advanced}
+    hidden
 ]}.
 
 %% @doc The threshold for the SNMP gauge at which traps are sent. Set
@@ -56,7 +56,7 @@ end}.
     "riak_snmp.nodeGetTimeMeanThreshold", [
     {default, off},
     {datatype, [{atom, off}, integer]},
-    {level, advanced}
+    hidden
 ]}.
 
 {translation, "riak_snmp.nodeGetTimeMeanThreshold",
@@ -72,7 +72,7 @@ end}.
     "riak_snmp.nodeGetTimeMedianThreshold", [
     {default, off},
     {datatype, [{atom, off}, integer]},
-    {level, advanced}
+    hidden
 ]}.
 
 {translation, "riak_snmp.nodeGetTimeMedianThreshold",
@@ -88,7 +88,7 @@ end}.
     "riak_snmp.nodeGetTime95Threshold", [
     {default, off},
     {datatype, [{atom, off}, integer]},
-    {level, advanced}
+    hidden
 ]}.
 
 {translation, "riak_snmp.nodeGetTime95Threshold",
@@ -104,7 +104,7 @@ end}.
     "riak_snmp.nodeGetTime99Threshold", [
     {default, off},
     {datatype, [{atom, off}, integer]},
-    {level, advanced}
+    hidden
 ]}.
 
 {translation, "riak_snmp.nodeGetTime99Threshold",
@@ -120,7 +120,7 @@ end}.
     "riak_snmp.nodeGetTime100Threshold", [
     {default, off},
     {datatype, [{atom, off}, integer]},
-    {level, advanced}
+    hidden
 ]}.
 
 {translation, "riak_snmp.nodeGetTime100Threshold",
@@ -137,7 +137,7 @@ end}.
     "riak_snmp.nodePutTimeMeanThreshold", [
     {default, off},
     {datatype, [{atom, off}, integer]},
-    {level, advanced}
+    hidden
 ]}.
 
 {translation, "riak_snmp.nodePutTimeMeanThreshold",
@@ -148,13 +148,12 @@ end}.
      end
 end}.
 
-
 %% @see snmp.nodeGetTimeMeanThreshold
 {mapping, "snmp.nodePutTimeMedianThreshold",
     "riak_snmp.nodePutTimeMedianThreshold", [
     {default, off},
     {datatype, [{atom, off}, integer]},
-    {level, advanced}
+    hidden
 ]}.
 
 {translation, "riak_snmp.nodePutTimeMedianThreshold",
@@ -170,7 +169,7 @@ end}.
     "riak_snmp.nodePutTime95Threshold", [
     {default, off},
     {datatype, [{atom, off}, integer]},
-    {level, advanced}
+    hidden
 ]}.
 
 {translation, "riak_snmp.nodePutTime95Threshold",
@@ -187,7 +186,7 @@ end}.
     "riak_snmp.nodePutTime99Threshold", [
     {default, off},
     {datatype, [{atom, off}, integer]},
-    {level, advanced}
+    hidden
 ]}.
 
 {translation, "riak_snmp.nodePutTime99Threshold",
@@ -204,7 +203,7 @@ end}.
     "riak_snmp.nodePutTime100Threshold", [
     {default, off},
     {datatype, [{atom, off}, integer]},
-    {level, advanced}
+    hidden
 ]}.
 
 {translation, "riak_snmp.nodePutTime100Threshold",
