@@ -1,5 +1,5 @@
 %% Riak EnterpriseDS
-%% Copyright (c) 2007-2013 Basho Technologies, Inc. All Rights Reserved.
+%% Copyright (c) 2007-2014 Basho Technologies, Inc. All Rights Reserved.
 -module(riak_snmp_stat_poller).
 -behaviour(gen_server).
 
@@ -458,6 +458,18 @@ set_repl_var({client_tx_kbps,Vals}) when is_list(Vals) ->
                       Cols = [{?replClientTxIndex,I},{?replClientTxRate,V}],
                       set_rows(replClientTxRateTable, [[I]], Cols)
               end, lists:zip(Indexes, Vals));
+set_repl_var({server_rx_kbps,Vals}) when is_list(Vals) ->
+    Indexes = lists:seq(0,length(Vals)-1),
+    lists:all(fun({I,V}) ->
+                      Cols = [{?replServerRxIndex,I},{?replServerRxRate,V}],
+                      set_rows(replServerRxRateTable, [[I]], Cols)
+              end, lists:zip(Indexes, Vals));
+set_repl_var({server_tx_kbps,Vals}) when is_list(Vals) ->
+    Indexes = lists:seq(0,length(Vals)-1),
+    lists:all(fun({I,V}) ->
+                      Cols = [{?replServerTxIndex,I},{?replServerTxRate,V}],
+                      set_rows(replServerTxRateTable, [[I]], Cols)
+              end, lists:zip(Indexes, Vals));
 set_repl_var({objects_dropped_no_clients,Val}) ->
     snmp_generic:variable_set({replObjectsDroppedNoClients, volatile}, Val);
 set_repl_var({objects_dropped_no_leader,Val}) ->
@@ -538,6 +550,10 @@ create_row(replFullsyncStatusTable=Table, RowIndex) ->
 create_row(replClientRxRateTable=Table, [C]=RowIndex) ->
     snmpa_local_db:table_create_row({Table, volatile}, RowIndex, {C, 0});
 create_row(replClientTxRateTable=Table, [C]=RowIndex) ->
+    snmpa_local_db:table_create_row({Table, volatile}, RowIndex, {C, 0});
+create_row(replServerRxRateTable=Table, [C]=RowIndex) ->
+    snmpa_local_db:table_create_row({Table, volatile}, RowIndex, {C, 0});
+create_row(replServerTxRateTable=Table, [C]=RowIndex) ->
     snmpa_local_db:table_create_row({Table, volatile}, RowIndex, {C, 0}).
 
 get_indexes(Table) ->
