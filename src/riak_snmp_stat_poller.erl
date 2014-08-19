@@ -500,8 +500,7 @@ set_repl_var({cluster_leader,Val}) ->
 set_repl_var(_) ->
     false.
 
-get_sorted_rows(Table) ->
-    SortFun = fun({[Idx1],_},{[Idx2],_}) -> Idx1 < Idx2 end,
+get_sorted_rows(Table, SortFun) ->
     lists:sort(SortFun, snmpa_local_db:table_get(Table)).
 
 set_rows(Table, all, Cols) ->
@@ -520,12 +519,17 @@ set_rows(_, [], _) ->
     true.
 set_rows(Table, Indexes, Cols, IndexCol)
   when Table =:= replRealtimeStatusTable; Table =:= replFullsyncStatusTable ->
-    case get_sorted_rows(Table) of
-        [] ->
-            true;
-        Rows ->
-            set_rows(Table, Rows, Indexes, Cols, IndexCol, [])
-    end.
+    NameSortFun = fun({Nm1,_},{Nm2,_}) -> Nm1 < Nm2 end,
+    Rows = case get_sorted_rows(Table, NameSortFun) of
+               [] ->
+                   SortedIndexes = lists:sort(NameSortFun, Indexes),
+                   true = lists:all(fun(Idx) -> create_row(Table, Idx) end,
+                                    SortedIndexes),
+                   get_sorted_rows(Table, NameSortFun);
+               R ->
+                   R
+           end,
+    set_rows(Table, Rows, Indexes, Cols, IndexCol, []).
 set_rows(Table, Rows, [Index|Indexes], Cols, IndexCol, Acc) ->
     ColsWithIndex = lists:keystore(IndexCol,1,Cols,{IndexCol,Index}),
     Row = [Row || {_,{Nm,_,_}}=Row <- Rows, Nm == Index],
@@ -543,10 +547,10 @@ set_rows(Table, Rows, [Index|Indexes], Cols, IndexCol, Acc) ->
 set_rows(_, _, [], _, _, Acc) ->
     lists:all(fun(T) -> T end, Acc).
 
-create_row(replRealtimeStatusTable=Table, RowIndex) ->
-    snmpa_local_db:table_create_row({Table, volatile}, RowIndex, {"", 2, 2});
-create_row(replFullsyncStatusTable=Table, RowIndex) ->
-    snmpa_local_db:table_create_row({Table, volatile}, RowIndex, {"", 2, 2});
+create_row(replRealtimeStatusTable=Table, SinkName) ->
+    snmpa_local_db:table_create_row({Table, volatile}, SinkName, {SinkName, 2, 2});
+create_row(replFullsyncStatusTable=Table, SinkName) ->
+    snmpa_local_db:table_create_row({Table, volatile}, SinkName, {SinkName, 2, 2});
 create_row(replClientRxRateTable=Table, [C]=RowIndex) ->
     snmpa_local_db:table_create_row({Table, volatile}, RowIndex, {C, 0});
 create_row(replClientTxRateTable=Table, [C]=RowIndex) ->
