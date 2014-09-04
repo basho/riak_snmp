@@ -1,0 +1,215 @@
+%%-*- mode: erlang -*-
+
+%% @doc Whether to force SNMP information to be repopulated on
+%% startup.
+{mapping, "snmp.force_reload", "snmp.agent", [
+    {default, on},
+    {datatype, flag},
+    hidden
+]}.
+
+%% @doc The directory where SNMP will store its internal database.
+{mapping, "snmp.database_dir", "snmp.agent", [
+    {default, "{{snmp_db_dir}}"},
+    {datatype, directory},
+    hidden
+]}.
+
+{translation,
+ "snmp.agent",
+ fun(Conf) ->
+    ForceReload = cuttlefish:conf_get("snmp.force_reload", Conf),
+    DBDir = cuttlefish:conf_get("snmp.database_dir", Conf),
+    [{net_if, [{options,[{bind_to, true}]}]},
+     {config, [{dir, "{{snmp_agent_conf}}"}, {force_load, ForceReload}]},
+     {db_dir, DBDir},
+     {db_init_error,create_db_and_dir}]
+end}.
+
+%% @doc How often SNMP will refresh its counters out of Riak's
+%% internal stats.
+{mapping, "snmp.refresh_frequency", "riak_snmp.polling_interval", [
+    {datatype, {duration, ms}},
+    {default, "1m"},
+    hidden
+]}.
+
+%% @doc Enable or disable traps for multi-datacenter replication.
+{mapping, "snmp.traps.replication", "riak_snmp.repl_traps_enabled", [
+    {datatype, flag},
+    {default, off},
+    hidden
+]}.
+
+%% @doc The threshold for the SNMP gauge at which traps are sent. Set
+%% to 'off' to disable traps for this gauge. When set to a positive
+%% integer in microseconds, the rising trap will be sent when the
+%% gauge crosses above the threshold, and the falling trap will be
+%% sent when the gauge crosses below the threshold.
+%%
+%% In the case of the 'nodeGetTimeMean' gauge, the threshold is
+%% 'nodeGetTimeMeanThreshold', the rising trap is
+%% 'nodeGetTimeMeanAlarmRising', and the falling trap is
+%% 'nodeGetTimeMeanFalling'. Other gauge thresholds follow this naming
+%% pattern.
+{mapping, "snmp.nodeGetTimeMeanThreshold",
+    "riak_snmp.nodeGetTimeMeanThreshold", [
+    {default, off},
+    {datatype, [{atom, off}, integer]},
+    hidden
+]}.
+
+{translation, "riak_snmp.nodeGetTimeMeanThreshold",
+ fun(Conf) ->
+     case cuttlefish:conf_get("snmp.nodeGetTimeMeanThreshold", Conf) of
+         off -> 0;
+         Int -> Int
+     end
+end}.
+
+%% @see snmp.nodeGetTimeMeanThreshold
+{mapping, "snmp.nodeGetTimeMedianThreshold",
+    "riak_snmp.nodeGetTimeMedianThreshold", [
+    {default, off},
+    {datatype, [{atom, off}, integer]},
+    hidden
+]}.
+
+{translation, "riak_snmp.nodeGetTimeMedianThreshold",
+ fun(Conf) ->
+     case cuttlefish:conf_get("snmp.nodeGetTimeMedianThreshold", Conf) of
+         off -> 0;
+         Int -> Int
+     end
+end}.
+
+%% @see snmp.nodeGetTimeMeanThreshold
+{mapping, "snmp.nodeGetTime95Threshold",
+    "riak_snmp.nodeGetTime95Threshold", [
+    {default, off},
+    {datatype, [{atom, off}, integer]},
+    hidden
+]}.
+
+{translation, "riak_snmp.nodeGetTime95Threshold",
+ fun(Conf) ->
+     case cuttlefish:conf_get("snmp.nodeGetTime95Threshold", Conf) of
+         off -> 0;
+         Int -> Int
+     end
+end}.
+
+%% @see snmp.nodeGetTimeMeanThreshold
+{mapping, "snmp.nodeGetTime99Threshold",
+    "riak_snmp.nodeGetTime99Threshold", [
+    {default, off},
+    {datatype, [{atom, off}, integer]},
+    hidden
+]}.
+
+{translation, "riak_snmp.nodeGetTime99Threshold",
+ fun(Conf) ->
+     case cuttlefish:conf_get("snmp.nodeGetTime99Threshold", Conf) of
+         off -> 0;
+         Int -> Int
+     end
+end}.
+
+%% @see snmp.nodeGetTimeMeanThreshold
+{mapping, "snmp.nodeGetTime100Threshold",
+    "riak_snmp.nodeGetTime100Threshold", [
+    {default, off},
+    {datatype, [{atom, off}, integer]},
+    hidden
+]}.
+
+{translation, "riak_snmp.nodeGetTime100Threshold",
+ fun(Conf) ->
+     case cuttlefish:conf_get("snmp.nodeGetTime100Threshold", Conf) of
+         off -> 0;
+         Int -> Int
+     end
+end}.
+
+
+%% @see snmp.nodeGetTimeMeanThreshold
+{mapping, "snmp.nodePutTimeMeanThreshold",
+    "riak_snmp.nodePutTimeMeanThreshold", [
+    {default, off},
+    {datatype, [{atom, off}, integer]},
+    hidden
+]}.
+
+{translation, "riak_snmp.nodePutTimeMeanThreshold",
+ fun(Conf) ->
+     case cuttlefish:conf_get("snmp.nodePutTimeMeanThreshold", Conf) of
+         off -> 0;
+         Int -> Int
+     end
+end}.
+
+%% @see snmp.nodeGetTimeMeanThreshold
+{mapping, "snmp.nodePutTimeMedianThreshold",
+    "riak_snmp.nodePutTimeMedianThreshold", [
+    {default, off},
+    {datatype, [{atom, off}, integer]},
+    hidden
+]}.
+
+{translation, "riak_snmp.nodePutTimeMedianThreshold",
+ fun(Conf) ->
+     case cuttlefish:conf_get("snmp.nodePutTimeMedianThreshold", Conf) of
+         off -> 0;
+         Int -> Int
+     end
+end}.
+
+%% @see snmp.nodeGetTimeMeanThreshold
+{mapping, "snmp.nodePutTime95Threshold",
+    "riak_snmp.nodePutTime95Threshold", [
+    {default, off},
+    {datatype, [{atom, off}, integer]},
+    hidden
+]}.
+
+{translation, "riak_snmp.nodePutTime95Threshold",
+ fun(Conf) ->
+     case cuttlefish:conf_get("snmp.nodePutTime95Threshold", Conf) of
+         off -> 0;
+         Int -> Int
+     end
+end}.
+
+
+%% @see snmp.nodeGetTimeMeanThreshold
+{mapping, "snmp.nodePutTime99Threshold",
+    "riak_snmp.nodePutTime99Threshold", [
+    {default, off},
+    {datatype, [{atom, off}, integer]},
+    hidden
+]}.
+
+{translation, "riak_snmp.nodePutTime99Threshold",
+ fun(Conf) ->
+     case cuttlefish:conf_get("snmp.nodePutTime99Threshold", Conf) of
+         off -> 0;
+         Int -> Int
+     end
+end}.
+
+
+%% @see snmp.nodeGetTimeMeanThreshold
+{mapping, "snmp.nodePutTime100Threshold",
+    "riak_snmp.nodePutTime100Threshold", [
+    {default, off},
+    {datatype, [{atom, off}, integer]},
+    hidden
+]}.
+
+{translation, "riak_snmp.nodePutTime100Threshold",
+ fun(Conf) ->
+     case cuttlefish:conf_get("snmp.nodePutTime100Threshold", Conf) of
+         off -> 0;
+         Int -> Int
+     end
+end}.

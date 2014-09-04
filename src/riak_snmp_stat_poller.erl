@@ -1,5 +1,5 @@
 %% Riak EnterpriseDS
-%% Copyright (c) 2007-2013 Basho Technologies, Inc. All Rights Reserved.
+%% Copyright (c) 2007-2014 Basho Technologies, Inc. All Rights Reserved.
 -module(riak_snmp_stat_poller).
 -behaviour(gen_server).
 
@@ -141,7 +141,13 @@ handle_cast(_Msg, State) ->
     {noreply, State, get_polling_interval()}.
 
 handle_info(timeout, State) ->
-    NewTrapStates = poll_stats(State#state.trap_states),
+    NewTrapStates = try
+                        poll_stats(State#state.trap_states)
+                    catch X:Y ->
+                            error_logger:error_msg("poll_stats: ~p ~p @ ~p\n",
+                                                   [X, Y, erlang:get_stacktrace()]),
+                            State#state.trap_states
+                    end,
     {noreply, State#state{trap_states=NewTrapStates}, get_polling_interval()};
 handle_info(_Info, State) ->
     {noreply, State, get_polling_interval()}.
@@ -175,7 +181,12 @@ prepare_mibs() ->
                       PD
               end,
     DefaultMibDir = filename:join(PrivDir, "mibs"),
-    MibDir = riak:get_app_env(mib_dir, DefaultMibDir),
+    MibDir = case application:get_env(riak_snmp, mib_dir) of
+                 undefined ->
+                     DefaultMibDir;
+                 {ok, MDir} ->
+                     MDir
+             end,
     snmpa:load_mibs(filelib:wildcard(filename:join(MibDir, "*.bin"))).
 
 poll_stats(TrapStates) ->
@@ -458,6 +469,18 @@ set_repl_var({client_tx_kbps,Vals}) when is_list(Vals) ->
                       Cols = [{?replClientTxIndex,I},{?replClientTxRate,V}],
                       set_rows(replClientTxRateTable, [[I]], Cols)
               end, lists:zip(Indexes, Vals));
+set_repl_var({server_rx_kbps,Vals}) when is_list(Vals) ->
+    Indexes = lists:seq(0,length(Vals)-1),
+    lists:all(fun({I,V}) ->
+                      Cols = [{?replServerRxIndex,I},{?replServerRxRate,V}],
+                      set_rows(replServerRxRateTable, [[I]], Cols)
+              end, lists:zip(Indexes, Vals));
+set_repl_var({server_tx_kbps,Vals}) when is_list(Vals) ->
+    Indexes = lists:seq(0,length(Vals)-1),
+    lists:all(fun({I,V}) ->
+                      Cols = [{?replServerTxIndex,I},{?replServerTxRate,V}],
+                      set_rows(replServerTxRateTable, [[I]], Cols)
+              end, lists:zip(Indexes, Vals));
 set_repl_var({objects_dropped_no_clients,Val}) ->
     snmp_generic:variable_set({replObjectsDroppedNoClients, volatile}, Val);
 set_repl_var({objects_dropped_no_leader,Val}) ->
@@ -488,8 +511,7 @@ set_repl_var({cluster_leader,Val}) ->
 set_repl_var(_) ->
     false.
 
-get_sorted_rows(Table) ->
-    SortFun = fun({[Idx1],_},{[Idx2],_}) -> Idx1 < Idx2 end,
+get_sorted_rows(Table, SortFun) ->
     lists:sort(SortFun, snmpa_local_db:table_get(Table)).
 
 set_rows(Table, all, Cols) ->
@@ -508,12 +530,17 @@ set_rows(_, [], _) ->
     true.
 set_rows(Table, Indexes, Cols, IndexCol)
   when Table =:= replRealtimeStatusTable; Table =:= replFullsyncStatusTable ->
-    case get_sorted_rows(Table) of
-        [] ->
-            true;
-        Rows ->
-            set_rows(Table, Rows, Indexes, Cols, IndexCol, [])
-    end.
+    NameSortFun = fun({Nm1,_},{Nm2,_}) -> Nm1 < Nm2 end,
+    Rows = case get_sorted_rows(Table, NameSortFun) of
+               [] ->
+                   SortedIndexes = lists:sort(NameSortFun, Indexes),
+                   true = lists:all(fun(Idx) -> create_row(Table, Idx) end,
+                                    SortedIndexes),
+                   get_sorted_rows(Table, NameSortFun);
+               R ->
+                   R
+           end,
+    set_rows(Table, Rows, Indexes, Cols, IndexCol, []).
 set_rows(Table, Rows, [Index|Indexes], Cols, IndexCol, Acc) ->
     ColsWithIndex = lists:keystore(IndexCol,1,Cols,{IndexCol,Index}),
     Row = [Row || {_,{Nm,_,_}}=Row <- Rows, Nm == Index],
@@ -531,13 +558,17 @@ set_rows(Table, Rows, [Index|Indexes], Cols, IndexCol, Acc) ->
 set_rows(_, _, [], _, _, Acc) ->
     lists:all(fun(T) -> T end, Acc).
 
-create_row(replRealtimeStatusTable=Table, RowIndex) ->
-    snmpa_local_db:table_create_row({Table, volatile}, RowIndex, {"", 2, 2});
-create_row(replFullsyncStatusTable=Table, RowIndex) ->
-    snmpa_local_db:table_create_row({Table, volatile}, RowIndex, {"", 2, 2});
+create_row(replRealtimeStatusTable=Table, SinkName) ->
+    snmpa_local_db:table_create_row({Table, volatile}, SinkName, {SinkName, 2, 2});
+create_row(replFullsyncStatusTable=Table, SinkName) ->
+    snmpa_local_db:table_create_row({Table, volatile}, SinkName, {SinkName, 2, 2});
 create_row(replClientRxRateTable=Table, [C]=RowIndex) ->
     snmpa_local_db:table_create_row({Table, volatile}, RowIndex, {C, 0});
 create_row(replClientTxRateTable=Table, [C]=RowIndex) ->
+    snmpa_local_db:table_create_row({Table, volatile}, RowIndex, {C, 0});
+create_row(replServerRxRateTable=Table, [C]=RowIndex) ->
+    snmpa_local_db:table_create_row({Table, volatile}, RowIndex, {C, 0});
+create_row(replServerTxRateTable=Table, [C]=RowIndex) ->
     snmpa_local_db:table_create_row({Table, volatile}, RowIndex, {C, 0}).
 
 get_indexes(Table) ->

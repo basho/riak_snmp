@@ -1,5 +1,5 @@
 %% Riak EnterpriseDS
-%% Copyright (c) 2013 Basho Technologies, Inc. All Rights Reserved.
+%% Copyright (c) 2013-2014 Basho Technologies, Inc. All Rights Reserved.
 -module(riak_snmp_tests).
 -compile(export_all).
 
@@ -32,8 +32,10 @@ stat_poll_test_() ->
        fun riak_objects_are_set/0},
       {"SNMP riak traps",
        fun riak_traps/0},
-      {"SNMP repl tables",
-       fun repl_tables/0},
+      {"SNMP repl tables 1",
+       fun repl_tables_1/0},
+      {"SNMP repl tables 2",
+       fun repl_tables_2/0},
       {"SNMP repl traps",
        fun repl_traps/0}]}.
 
@@ -93,7 +95,7 @@ riak_traps() ->
                         ?assertEqual(Thresh, ThresholdVal),
                         ok
                 end),
-    timer:sleep(trunc(1.5*?INTERVAL)),
+    timer:sleep(trunc(5.5*?INTERVAL)),
     ?assert(meck:validate(snmpa)),
     ?assert(meck:called(snmpa, send_notification,
                         [snmp_master_agent,nodeGetTimeMeanAlarmRising,
@@ -109,7 +111,7 @@ riak_traps() ->
                 end),
     meck:expect(fake_riak_stats, get_stats,
                 fun(local) -> get_stats(Stat, 0) end),
-    timer:sleep(trunc(1.5*?INTERVAL)),
+    timer:sleep(trunc(5.5*?INTERVAL)),
     riak_snmp_stat_poller:stop(),
     timer:sleep(2*?INTERVAL),
     ?assert(meck:validate(snmpa)),
@@ -122,7 +124,7 @@ riak_traps() ->
     ok.
 
 %% This test sets one of the repl SNMP tables with a single element.
-repl_tables() ->
+repl_tables_1() ->
     Stat = client_rx_kbps,
     StatVal = 16,
     ok = application:set_env(riak_snmp, repl_traps_enabled, true),
@@ -148,7 +150,7 @@ repl_tables() ->
                         true
                 end),
     riak_snmp_stat_poller:start_link(),
-    timer:sleep(trunc(1.5*?INTERVAL)),
+    timer:sleep(trunc(5.5*?INTERVAL)),
     riak_snmp_stat_poller:stop(),
     timer:sleep(2*?INTERVAL),
     ?assert(meck:validate(snmpa)),
@@ -157,6 +159,50 @@ repl_tables() ->
     ?assert(meck:validate(riak_repl_console)),
     ?assert(meck:called(snmp_generic, table_set_elements,
                         [replClientRxRateTable,[0],[{1,0},{2,StatVal}]])),
+    meck:unload(riak_repl_console),
+    ok.
+
+%% This test sets one of the repl SNMP string-indexed tables with a single element.
+-define(SINKNAME, "ClusterB").
+repl_tables_2() ->
+    Stat = realtime_enabled,
+    StatVal = ?SINKNAME,
+    ok = application:set_env(riak_snmp, repl_traps_enabled, true),
+    meck:expect(snmpa, load_mibs, fun(_) -> ok end),
+    meck:expect(fake_riak_stats, get_stats,
+                fun(local) ->
+                        get_stats(node_get_fsm_time_mean, 0)
+                end),
+    meck:expect(snmp_generic, variable_set,
+                fun({_,volatile}, _) -> true end),
+    ok = meck:new(riak_repl_console),
+    meck:expect(riak_repl_console, status,
+                fun(quiet) ->
+                        [{Stat, StatVal}]
+                end),
+    meck:expect(snmp_generic, table_row_exists,
+                fun(replRealtimeStatusTable,?SINKNAME) -> false end),
+    meck:expect(snmpa_local_db, table_create_row,
+                fun({replRealtimeStatusTable,volatile},?SINKNAME,{?SINKNAME,2,2}) ->
+                        true
+                end),
+    meck:expect(snmpa_local_db, table_get,
+                fun(replRealtimeStatusTable) -> [{?SINKNAME,{?SINKNAME,2,2}}] end),
+    meck:expect(snmp_generic, table_set_elements,
+                fun(replRealtimeStatusTable,Val,[{2,1},{1,Val}]) ->
+                        ?assertEqual(Val, StatVal),
+                        true
+                end),
+    riak_snmp_stat_poller:start_link(),
+    timer:sleep(trunc(5.5*?INTERVAL)),
+    riak_snmp_stat_poller:stop(),
+    timer:sleep(2*?INTERVAL),
+    ?assert(meck:validate(snmpa)),
+    ?assert(meck:validate(snmpa_local_db)),
+    ?assert(meck:validate(snmp_generic)),
+    ?assert(meck:validate(riak_repl_console)),
+    ?assert(meck:called(snmp_generic, table_set_elements,
+                        [replRealtimeStatusTable,?SINKNAME,[{2,1},{1,?SINKNAME}]])),
     meck:unload(riak_repl_console),
     ok.
 
@@ -184,7 +230,7 @@ repl_traps() ->
                         ok
                 end),
     riak_snmp_stat_poller:start_link(),
-    timer:sleep(trunc(1.5*?INTERVAL)),
+    timer:sleep(trunc(5.5*?INTERVAL)),
     riak_snmp_stat_poller:stop(),
     timer:sleep(2*?INTERVAL),
     ?assert(meck:validate(snmpa)),
