@@ -126,7 +126,7 @@ stop() ->
 %%====================================================================
 
 init([]) ->
-    prepare_mibs(),
+    ok = prepare_mibs(),
     Polling = get_polling_interval(),
     TrapStates = init_trap_states(),
     {ok, #state{trap_states=TrapStates}, Polling}.

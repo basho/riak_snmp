@@ -1,0 +1,18 @@
+riak_snmp_stat_poller.erl:128: Function init/1 has no local return
+riak_snmp_stat_poller.erl:213: Function insert_riak_stats/2 has no local return
+riak_snmp_stat_poller.erl:241: Function traps/0 has no local return
+riak_snmp_stat_poller.erl:242: Cons will produce an improper list since its 2nd argument is none()
+riak_snmp_stat_poller.erl:321: Function init_trap_states/0 has no local return
+Unknown functions:
+  otp_mib:load/1
+  riak:local_client/0
+  riak_core_util:start_app_deps/1
+  riak_repl_console:status/1
+  snmp_generic:table_next/2
+  snmp_generic:table_row_exists/2
+  snmp_generic:table_set_elements/3
+  snmp_generic:variable_set/2
+  snmpa:load_mibs/1
+  snmpa:send_notification/4
+  snmpa_local_db:table_create_row/3
+  snmpa_local_db:table_get/1
