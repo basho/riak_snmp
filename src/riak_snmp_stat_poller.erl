@@ -530,10 +530,12 @@ set_rows(_, [], _) ->
     true.
 set_rows(Table, Indexes, Cols, IndexCol)
   when Table =:= replRealtimeStatusTable; Table =:= replFullsyncStatusTable ->
-    NameSortFun = fun({Nm1,_},{Nm2,_}) -> Nm1 < Nm2 end,
+    NameSortFun = fun({Nm1,_},{Nm2,_}) ->
+                          Nm1 < Nm2
+                  end,
     Rows = case get_sorted_rows(Table, NameSortFun) of
                [] ->
-                   SortedIndexes = lists:sort(NameSortFun, Indexes),
+                   SortedIndexes = lists:sort(fun(I1, I2) -> I1 < I2 end, Indexes),
                    true = lists:all(fun(Idx) -> create_row(Table, Idx) end,
                                     SortedIndexes),
                    get_sorted_rows(Table, NameSortFun);

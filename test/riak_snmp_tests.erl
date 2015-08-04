@@ -163,7 +163,9 @@ repl_tables_1() ->
     ok.
 
 %% This test sets one of the repl SNMP string-indexed tables with a single element.
--define(SINKNAME, "ClusterB").
+-define(CLUSTER_B, "ClusterB").
+-define(CLUSTER_C, "ClusterC").
+-define(SINKNAME, "ClusterB, ClusterC").
 repl_tables_2() ->
     Stat = realtime_enabled,
     StatVal = ?SINKNAME,
@@ -181,18 +183,25 @@ repl_tables_2() ->
                         [{Stat, StatVal}]
                 end),
     meck:expect(snmp_generic, table_row_exists,
-                fun(replRealtimeStatusTable,?SINKNAME) -> false end),
+                [
+                 {[replRealtimeStatusTable, ?CLUSTER_B], false},
+                 {[replRealtimeStatusTable, ?CLUSTER_C], false}
+                ]),
     meck:expect(snmpa_local_db, table_create_row,
-                fun({replRealtimeStatusTable,volatile},?SINKNAME,{?SINKNAME,2,2}) ->
-                        true
-                end),
+                [
+                 {[{replRealtimeStatusTable,volatile}, ?CLUSTER_B, {?CLUSTER_B, 2, 2}], true},
+                 {[{replRealtimeStatusTable,volatile}, ?CLUSTER_C, {?CLUSTER_C, 2, 2}], true}
+                ]),
+    TableGetResult = [{?CLUSTER_B,{?CLUSTER_B,2,2}}, {?CLUSTER_C,{?CLUSTER_C,2,2}}],
     meck:expect(snmpa_local_db, table_get,
-                fun(replRealtimeStatusTable) -> [{?SINKNAME,{?SINKNAME,2,2}}] end),
+                [
+                 {[replRealtimeStatusTable], meck:seq([[], TableGetResult])}
+                ]),
     meck:expect(snmp_generic, table_set_elements,
-                fun(replRealtimeStatusTable,Val,[{2,1},{1,Val}]) ->
-                        ?assertEqual(Val, StatVal),
-                        true
-                end),
+                [
+                 {[replRealtimeStatusTable,?CLUSTER_B,[{2,1},{1,?CLUSTER_B}]], true},
+                 {[replRealtimeStatusTable,?CLUSTER_C,[{2,1},{1,?CLUSTER_C}]], true}
+                ]),
     riak_snmp_stat_poller:start_link(),
     timer:sleep(trunc(5.5*?INTERVAL)),
     riak_snmp_stat_poller:stop(),
@@ -202,7 +211,9 @@ repl_tables_2() ->
     ?assert(meck:validate(snmp_generic)),
     ?assert(meck:validate(riak_repl_console)),
     ?assert(meck:called(snmp_generic, table_set_elements,
-                        [replRealtimeStatusTable,?SINKNAME,[{2,1},{1,?SINKNAME}]])),
+                        [replRealtimeStatusTable,?CLUSTER_B,[{2,1},{1,?CLUSTER_B}]])),
+    ?assert(meck:called(snmp_generic, table_set_elements,
+                        [replRealtimeStatusTable,?CLUSTER_C,[{2,1},{1,?CLUSTER_C}]])),
     meck:unload(riak_repl_console),
     ok.
 
