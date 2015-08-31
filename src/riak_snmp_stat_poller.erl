@@ -545,7 +545,6 @@ set_rows(Table, SinkNames, Cols, ColumnIndex)
     set_rows(Table, Rows, SinkNames, Cols, ColumnIndex, []).
 
 set_rows(Table, Rows, [SinkName | RemainingSinkNames], Cols, ColumnIndex, Acc) ->
-  lager:log(info, self(), "set_rows/6a: Rows = ~p", [Rows]),
     ColsWithIndex = lists:keystore(ColumnIndex,1,Cols,{ColumnIndex, SinkName}),
     Row = [Row || {_,{Nm,_,_}}=Row <- Rows, Nm == SinkName],
     {NewRows, IndexArg} = case Row of
