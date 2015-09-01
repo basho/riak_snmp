@@ -535,7 +535,11 @@ set_rows(Table, SinkNames, Cols, ColumnIndex)
                   end,
     Rows = case get_sorted_rows(Table, NameSortFun) of
                [] ->
-                   SortedSinkNames = lists:sort(fun(I1, I2) -> I1 < I2 end, SinkNames),
+                   SortedSinkNames = lists:sort(
+                                       fun(Sink1, Sink2) ->
+                                               Sink1 < Sink2
+                                       end,
+                                       SinkNames),
                    true = lists:all(fun(Idx) -> create_row(Table, Idx) end,
                                     SortedSinkNames),
                    get_sorted_rows(Table, NameSortFun);
@@ -578,5 +582,3 @@ get_indexes(_, endOfTable, Acc) ->
 get_indexes(Table, RowIndex, Acc) ->
     NewAcc = [RowIndex|Acc],
     get_indexes(Table, snmp_generic:table_next(Table, RowIndex), NewAcc).
-
-
