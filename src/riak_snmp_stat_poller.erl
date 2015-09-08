@@ -553,7 +553,7 @@ set_rows(Table, Rows, [SinkName | RemainingSinkNames], Cols, ColumnIndex, Acc) -
     Row = [Row || {_,{Nm,_,_}}=Row <- Rows, Nm == SinkName],
     {NewRows, IndexArg} = case Row of
                               [] ->
-                                  {Rows ++ [{[SinkName],ColsWithIndex}], [[SinkName]]};
+                                  {Rows ++ [{[SinkName], ColsWithIndex}], [SinkName]};
                               [{RowIndex,_}] ->
                                   {Rows, [RowIndex]}
                           end,
