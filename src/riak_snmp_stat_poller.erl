@@ -528,35 +528,37 @@ set_rows(Table, [RowIndex|Rows], Cols) ->
     set_rows(Table, Rows, Cols);
 set_rows(_, [], _) ->
     true.
-set_rows(Table, Indexes, Cols, IndexCol)
+set_rows(Table, SinkNames, Cols, ColumnIndex)
   when Table =:= replRealtimeStatusTable; Table =:= replFullsyncStatusTable ->
     NameSortFun = fun({Nm1,_},{Nm2,_}) ->
                           Nm1 < Nm2
                   end,
     Rows = case get_sorted_rows(Table, NameSortFun) of
                [] ->
-                   SortedIndexes = lists:sort(fun(I1, I2) -> I1 < I2 end, Indexes),
+                   SortedSinkNames = lists:sort(
+                                       fun(Sink1, Sink2) ->
+                                               Sink1 < Sink2
+                                       end,
+                                       SinkNames),
                    true = lists:all(fun(Idx) -> create_row(Table, Idx) end,
-                                    SortedIndexes),
+                                    SortedSinkNames),
                    get_sorted_rows(Table, NameSortFun);
                R ->
                    R
            end,
-    set_rows(Table, Rows, Indexes, Cols, IndexCol, []).
-set_rows(Table, Rows, [Index|Indexes], Cols, IndexCol, Acc) ->
-    ColsWithIndex = lists:keystore(IndexCol,1,Cols,{IndexCol,Index}),
-    Row = [Row || {_,{Nm,_,_}}=Row <- Rows, Nm == Index],
+    set_rows(Table, Rows, SinkNames, Cols, ColumnIndex, []).
+
+set_rows(Table, Rows, [SinkName | RemainingSinkNames], Cols, ColumnIndex, Acc) ->
+    ColsWithIndex = lists:keystore(ColumnIndex,1,Cols,{ColumnIndex, SinkName}),
+    Row = [Row || {_,{Nm,_,_}}=Row <- Rows, Nm == SinkName],
     {NewRows, IndexArg} = case Row of
                               [] ->
-                                  [{[LastIndex],_}|_] = lists:reverse(Rows),
-                                  NextIndex = LastIndex+1,
-                                  {Rows ++ [{[NextIndex],ColsWithIndex}],
-                                   [[NextIndex]]};
+                                  {Rows ++ [{[SinkName], ColsWithIndex}], [SinkName]};
                               [{RowIndex,_}] ->
                                   {Rows, [RowIndex]}
                           end,
     Result = set_rows(Table, IndexArg, ColsWithIndex),
-    set_rows(Table, NewRows, Indexes, Cols, IndexCol, [Result|Acc]);
+    set_rows(Table, NewRows, RemainingSinkNames, Cols, ColumnIndex, [Result|Acc]);
 set_rows(_, _, [], _, _, Acc) ->
     lists:all(fun(T) -> T end, Acc).
 
