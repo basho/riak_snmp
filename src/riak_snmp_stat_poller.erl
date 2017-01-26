@@ -73,7 +73,7 @@
                              nodePutTime100AlarmFalling.
 
 %% The tvalue field of the threshold_trap record type below is constrained
-%% to pos_integer() because all the stats currently being monitored for
+%% to non_neg_integer() because all the stats currently being monitored for
 %% SNMP traps based on thresholds are all measured in microseconds. The
 %% value 0 is used to indicate that traps are disabled for that stat. See
 %% the default values in riak_ee/rel/files/app.config. The alarm_on field
@@ -83,7 +83,7 @@
           threshold :: trap_stat_threshold(),
           rising :: trap_stat_rising(),
           falling :: trap_stat_falling(),
-          tvalue = 0 :: pos_integer(),
+          tvalue = 0 :: non_neg_integer(),
           alarm_on = false :: boolean()
          }).
 
@@ -94,7 +94,7 @@
                          replRtSinkErrorAlarm | replRtSourceErrorAlarm.
 
 -record(counter_trap, {
-          last_count = 0 :: pos_integer(),
+          last_count = 0 :: non_neg_integer(),
           alarm :: counter_alarm()
          }).
 
@@ -268,7 +268,7 @@ traps() ->
                  trap=#threshold_trap{
                          threshold=nodeGetTime100Threshold,
                          rising=nodeGetTime100AlarmRising,
-                         falling=nodeGetTime100Alarmfalling}},
+                         falling=nodeGetTime100AlarmFalling}},
      #trap_state{stat=node_put_fsm_time_mean,
                  var=nodePutTimeMean,
                  trap=#threshold_trap{
