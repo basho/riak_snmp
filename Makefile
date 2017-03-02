@@ -2,14 +2,20 @@
 
 .PHONY: deps test
 
-all: deps compile
+MIBS=RIAK.mib
+
+all: deps mib compile
 
 deps:
 	./rebar get-deps
 
+mib : priv/mibs/$(MIB)
+
+priv/mibs/$(MIB): mibs/$(MIB)
+	cp mibs/$(MIB) priv/mibs/$(MIB)
+
 compile:
 	./rebar compile
-	cp mibs/* priv/mibs/
 
 clean:
 	./rebar clean
